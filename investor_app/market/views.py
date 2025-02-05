@@ -3,8 +3,6 @@ from .models import Assets, StockQuote
 from .serializers import AssetsSerializer, StockQuoteSerializer
 
 
-
-# Create your views here.
 class AssetsViewSet(viewsets.ModelViewSet):
     queryset = Assets.objects.all()
     serializer_class = AssetsSerializer

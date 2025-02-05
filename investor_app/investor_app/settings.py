@@ -11,16 +11,25 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Initializing django-environ
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR,'.env'))
+
+# Loading the enviroment variables
+BRAPI_KEY = env('BRAPI_KEY') 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-tv5dsv$a+^x(1e_n3kb1@!t3@-kazfcd!*ken468#+-dsi7u&%'
+SECRET_KEY = 'django-insecure-tv5dsv$a+^x(1e_n3kb1@!t3@-kazfcd!*ken468#+-dsi7u&%' #This key will go to github because this is just a educational project.
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "rest_framework",
     "market"
 ]
 
@@ -122,3 +132,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Celery configurations 
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
