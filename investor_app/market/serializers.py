@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Assets, StockQuote
+from .models import Assets, UserAssets
 
 
 class AssetsSerializer(serializers.ModelSerializer):
@@ -8,11 +8,11 @@ class AssetsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class StockQuoteSerializer(serializers.ModelSerializer):
-    asset = serializers.SlugRelatedField(
+class UserAssetsSerializer(serializers.ModelSerializer):
+    code = serializers.SlugRelatedField(
         queryset=Assets.objects.all(), slug_field="code"
     )
 
     class Meta:
-        model = StockQuote
+        model = UserAssets
         fields = "__all__"

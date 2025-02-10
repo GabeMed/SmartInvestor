@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "rest_framework",
+    'django_celery_beat',
+    'rest_framework',
     "market"
 ]
 
@@ -135,6 +136,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Celery configurations 
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+
 CELERY_ACCEPT_CONTENT = ["json"]
+
 CELERY_TASK_SERIALIZER = "json"
+
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"
