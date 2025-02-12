@@ -15,6 +15,7 @@ class UserAssets(models.Model):
     code = models.ForeignKey(Assets, on_delete=models.CASCADE)
     upper_limit = models.DecimalField(max_digits=10, decimal_places=2)
     lower_limit = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     periodicy = models.IntegerField(default=5)  # We are using time in minutes
 
     def __str__(self):

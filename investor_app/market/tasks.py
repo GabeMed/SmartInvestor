@@ -1,11 +1,12 @@
 import requests
 from django.conf import settings
 from celery import shared_task
-from market.models import Assets
+from market.models import Assets, UserAssets
+from market.utils import email_alert
 
 @shared_task
-def fetch_stock_data(stock_symbol):
-    url = f"https://brapi.dev/api/quote/{stock_symbol}?token={settings.BRAPI_KEY}"
+def fetch_stock_data(stock_code):
+    url = f"https://brapi.dev/api/quote/{stock_code}?token={settings.BRAPI_KEY}"
     response = requests.get(url)
     data = response.json()
 
@@ -18,6 +19,20 @@ def fetch_stock_data(stock_symbol):
         return f"Stock {stock.code}{'created' if created else 'updated'} successfully."
 
     return "Failed to fetch stock data."
+
+@shared_task
+def verify_user_stocks():
+    user_stocks = UserAssets.objects.all()
+    
+    for stock in user_stocks:
+        
+        if stock.price < stock.lower_limit:
+            email_alert(settings.EMAIL_TEST,"compra")
+        
+        elif stock.price > stock.upper_limit:
+            email_alert(settings.EMAIL_TEST,"venda")
+    
+    return None
 
 @shared_task
 def fetch_all_stocks():
@@ -34,6 +49,8 @@ def fetch_all_stocks():
                 defaults={"price": stock_data["close"]}
             )
         
+        verify_user_stocks()
+
         return f"{len(stocks)} stocks updated successfully"
     
     return "Failed to fetch stocks."
