@@ -6,4 +6,4 @@ class MarketConfig(AppConfig):
     name = 'market'
 
     def ready(self):
-        import market.signals
+        import market.signals  # noqa: F401  (registers the signal handlers)

@@ -9,6 +9,8 @@ class AssetsAdmin(admin.ModelAdmin):
 
 @admin.register(UserAssets)
 class UserAssetsAdmin(admin.ModelAdmin):
-    list_display = ('code', 'upper_limit', 'lower_limit', 'periodicy')
+    list_display = ('code', 'price', 'lower_limit', 'upper_limit', 'periodicy')
+    readonly_fields = ('price',)
+    autocomplete_fields = ('code',)  # ~2000 assets: a plain <select> is unusable
     search_fields = ('code__code',)
     ordering = ('code',)

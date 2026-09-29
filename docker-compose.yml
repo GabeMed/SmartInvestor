@@ -1,0 +1,95 @@
+# docker compose up --build
+#   Admin:  http://localhost:8000/admin   (admin / admin)
+#   API:    http://localhost:8000/
+#   E-mail: http://localhost:8025          (Mailpit catches the price alerts)
+x-app: &app
+  build: .
+  environment: &app-env
+    DATABASE_URL: postgres://smart:smart@db:5432/smart_investor
+    CELERY_BROKER_URL: redis://redis:6379/0
+    SECRET_KEY: ${SECRET_KEY:-local-dev-secret-change-me}
+    ALLOWED_HOSTS: localhost,127.0.0.1
+    BRAPI_KEY: ${BRAPI_KEY:-}
+    EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+    EMAIL_HOST: mailpit
+    EMAIL_PORT: "1025"
+    EMAIL_USE_TLS: "false"
+    EMAIL_TEST: ${EMAIL_TEST:-alerts@example.com}
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      # Local development credentials only.
+      POSTGRES_USER: smart
+      POSTGRES_PASSWORD: smart
+      POSTGRES_DB: smart_investor
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smart -d smart_investor"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "8025:8025"
+
+  web:
+    <<: *app
+    # Migrate, create the local admin user, load quotes once (BRAPI; the app
+    # still starts if it is unreachable), create the demo monitored assets,
+    # then serve.
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             (python manage.py createsuperuser --noinput 2>/dev/null || true) &&
+             python manage.py update_quotes &&
+             python manage.py seed_demo &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      <<: *app-env
+      DJANGO_SUPERUSER_USERNAME: admin
+      DJANGO_SUPERUSER_PASSWORD: admin
+      DJANGO_SUPERUSER_EMAIL: admin@example.com
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/assets/')"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  worker:
+    <<: *app
+    command: celery -A investor_app worker --loglevel=info
+    depends_on:
+      web:
+        condition: service_healthy
+
+  beat:
+    <<: *app
+    # Runs fetch_all_stocks every hour (see investor_app/celery.py).
+    command: celery -A investor_app beat --loglevel=info
+    depends_on:
+      web:
+        condition: service_healthy
+
+volumes:
+  pgdata:
