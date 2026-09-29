@@ -87,8 +87,10 @@ WSGI_APPLICATION = 'investor_app.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 # SQLite by default; docker-compose sets DATABASE_URL to PostgreSQL.
+# local.sqlite3 is git-ignored (db.sqlite3 is an old development database
+# that was committed, and is no longer used).
 DATABASES = {
-    'default': env.db('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+    'default': env.db('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'local.sqlite3'}"),
 }
 
 
