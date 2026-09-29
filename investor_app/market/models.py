@@ -9,6 +9,11 @@ class Assets(models.Model):
     # Time of the last price update (auto_now_add only kept the creation time).
     timestamp = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        # Django would otherwise display "Assetss" in the admin.
+        verbose_name = "asset"
+        verbose_name_plural = "assets"
+
     def __str__(self):
         return f"{self.code} : {self.price}"
 
@@ -21,6 +26,10 @@ class UserAssets(models.Model):
     # the post_save signal on Assets (see signals.py), so it is not editable.
     price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     periodicy = models.IntegerField(default=5)  # We are using time in minutes
+
+    class Meta:
+        verbose_name = "monitored asset"
+        verbose_name_plural = "monitored assets"
 
     def clean(self):
         if (
