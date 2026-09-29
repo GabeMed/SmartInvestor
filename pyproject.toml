@@ -1,0 +1,8 @@
+# Tooling config only; dependencies are pinned in requirements*.txt.
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+extend-exclude = [".venv", "investor_app/market/migrations"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "B"]
