@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
-from celery.beat import crontab
+from celery.schedules import crontab
 
 # Setting the environment variables so celery can access all the settings of the django app
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "investor_app.settings")
